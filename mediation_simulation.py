@@ -19,7 +19,7 @@ def simulate_simple_mediation(n, p_otu, p_metabolite, mediations = 1):
         "OTU": otutable,
         "Metabolite": metabplitetable,
         "OtuAnn": pd.DataFrame({"Species":["OTU{}".format(i) for i in range(1,p_otu+1)]}),
-        "MetAnn": pd.DataFrame({"Species":["M{}".format(j) for j in range(1,not_mediation_metabolite]+["M{} Mediator".format(k) for k in range(not_mediation_metabolite,p_metabolite+1]})
+        "MetAnn": pd.DataFrame({"Species":["M{}".format(j) if j<not_mediation_metabolite else "M{} Mediator".format(j) for j in range(1,p_metabolite+1)]})
         }
 
     return final
