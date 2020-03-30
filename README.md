@@ -1,6 +1,7 @@
 # antibiotics-project
 
 - finished 1st draft of mediation_simulation in python
-- TODO: test & validate if the python version matches with expected result (R)
+- test & validate if the python version matches with expected result (R)
     - OtuAnn and MetAnn output looks about right;
-    - OTU & Metabolite have wrong dimension
+    - OTU & Metabolite fixed
+- TODO: 

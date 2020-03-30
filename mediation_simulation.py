@@ -5,20 +5,20 @@ def simulate_simple_mediation(n, p_otu, p_metabolite, mediations = 1):
     not_mediation_otu = p_otu-2*mediations
     not_mediation_metabolite = p_metabolite-mediations
 
-    otutable = np.random.rand(not_mediation_otu,n)
-    metabplitetable = np.random.rand(not_mediation_metabolite,n)
+    otutable = np.random.rand(n, not_mediation_otu)
+    metabolitetable = np.random.rand(not_mediation_metabolite,n)
 
     # format the otutable for concatenation
-    otutable = pd.DataFrame(otutable,columns=("producer","target"))
+    otutable = pd.DataFrame(otutable)
 
-    for m in range(1, mediations):
+    for m in range(mediations):
         temp = simple_mediation_direct(n)
-        otutable = pd.concat([otubale,temp["OTU"]], "inner")  # inner join for mimicing the behaviour of rbind
-        p_metabolite = np.concatenate([metabplitetable,temp["Metabolite"]])
+        otutable = pd.concat([otutable,temp["OTU"]])
+        metabolitetable = np.concatenate([metabolitetable,np.expand_dims(temp["Metabolite"], axis=0)],axis=0)
 
     final = {
         "OTU": otutable,
-        "Metabolite": metabplitetable,
+        "Metabolite": metabolitetable,
         "OtuAnn": pd.DataFrame({"Species":["OTU{}".format(i) for i in range(1,p_otu+1)]}),
         "MetAnn": pd.DataFrame({"Species":["M{}".format(j) if j<not_mediation_metabolite else "M{} Mediator".format(j) for j in range(1,p_metabolite+1)]})
         }
@@ -31,7 +31,7 @@ def simple_mediation(n, beta11 = -2, beta21 = 2, b32 = -1.5):
     target = beta11*producer + b32*mm + np.random.normal(size=n)
 
     # format the results for output
-    otu = pd.DataFrame(data={"producer":producer,"target":target})
+    otu = pd.DataFrame(data=[producer,target],index=["producer","target"])
     temp = {"OTU": otu,"Metabolite": mm}
 
     return temp
@@ -42,7 +42,7 @@ def simple_mediation_direct(n, beta11 = -2, beta21 = 2, b32 = -1.5):
     target = b32*mm + np.random.normal(size=n)
 
     # format the results for output
-    otu = pd.DataFrame(data={"producer":producer,"target":target})
+    otu = pd.DataFrame(data=[producer,target],index=["producer","target"])
     temp = {"OTU":otu,"Metabolite":mm}
 
     return temp
