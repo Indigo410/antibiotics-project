@@ -5,8 +5,7 @@ def simulate_simple_mediation(n, p_otu, p_metabolite, mediations = 1):
     not_mediation_otu = p_otu-2*mediations
     not_mediation_metabolite = p_metabolite-mediations
 
-    # TODO
-    otutable = np.random.rand(not_mediation_metabolite,n)
+    otutable = np.random.rand(not_mediation_otu,n)
     metabplitetable = np.random.rand(not_mediation_metabolite,n)
 
     # format the otutable for concatenation
