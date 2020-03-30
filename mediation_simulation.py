@@ -13,8 +13,8 @@ def simulate_simple_mediation(n, p_otu, p_metabolite, mediations = 1):
 
     for m in range(mediations):
         temp = simple_mediation_direct(n)
-        otutable = np.stack([otutable,temp["OTU"]],axis=1)
-        metabolitetable = np.stack([metabolitetable,temp["Metabolite"]],axis=1)
+        otutable = np.vstack([otutable,temp["OTU"]])
+        metabolitetable = np.vstack([metabolitetable,temp["Metabolite"]])
 
     final = {
         "OTU": otutable,
@@ -34,7 +34,7 @@ def simple_mediation(n, beta11 = -2, beta21 = 2, b32 = -1.5):
 
     # format the results for output
     # otu = pd.DataFrame(data=[producer,target],index=["producer","target"])
-    otu = np.stack([producer,target],axis=1)
+    otu = np.vstack([producer,target])
     temp = {"OTU": otu,"Metabolite": np.expand_dims(mm, axis=0)}
 
     return temp
@@ -46,7 +46,7 @@ def simple_mediation_direct(n, beta11 = -2, beta21 = 2, b32 = -1.5):
 
     # format the results for output
     # otu = pd.DataFrame(data=[producer,target],index=["producer","target"])
-    otu = np.stack([producer,target],axis=1)
+    otu = np.vstack([producer,target])
     temp = {"OTU":otu,"Metabolite":np.expand_dims(mm, axis=0)}
 
     return temp
