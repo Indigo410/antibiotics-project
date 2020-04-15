@@ -1,5 +1,9 @@
 # antibiotics-project
 
+
+- added first draft of reimplementation of linear regression (linmodEst) from R.
+- TODO: test linReg.py
+
 - finished 1st draft of mediation_simulation in python
 - test & validate if the python version matches with expected result (R)
     - OtuAnn and MetAnn output looks about right;
