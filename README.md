@@ -1,5 +1,6 @@
 # antibiotics-project
 
+- updated B&K steps for mediation on simulated data
 
 - added first draft of reimplementation of linear regression (linmodEst) from R.
 - TODO: test linReg.py
