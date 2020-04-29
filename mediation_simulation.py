@@ -1,4 +1,33 @@
 import numpy as np
+from scipy.linalg import eigh
+
+
+def multi_var_mediation(n, b11 = -2, b21 = 2, b32 = -1.5, A=None):
+    # ? not sure how this psd covariance matrix is supposed to be
+    if A==None:
+        psd=False
+        while not psd:
+            # randomly generate a psd matrix
+            mat=np.random.rand(n,n)
+            mat=mat.T.dot(mat)
+
+            # check whether mat is indeed psd
+            E,_=eigh(mat)
+            psd=all(E>=0)
+    else:
+        mat=A.T.dot(A)
+
+    producer=(np.random.multivariate_normal(np.zeros(n),mat,size=n)
+             +np.random.rand(n))
+    
+    mm = b21*producer + np.random.normal(size=n)
+    target = b11*producer + b32*mm + np.random.normal(size=n)
+
+    otu = np.vstack([producer,target])
+    temp = {"OTU": otu,"Metabolite": np.expand_dims(mm, axis=0)}
+
+    return temp
+    
 
 def simple_mediation(n, beta11 = -2, beta21 = 2, b32 = -1.5):
     producer = np.random.rand(n)
