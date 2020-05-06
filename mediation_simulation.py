@@ -2,22 +2,25 @@ import numpy as np
 from scipy.linalg import eigh
 
 
-def multi_var_mediation(n, b11 = -2, b21 = 2, b32 = -1.5, A=None):
-    # ? not sure how this psd covariance matrix is supposed to be
-    if A==None:
-        psd=False
-        while not psd:
-            # randomly generate a psd matrix
-            mat=np.random.rand(n,n)
-            mat=mat.T.dot(mat)
+def _A(n,pairs=((1,0),(3,2))):
+    """
+    helper method for producing the cov matrix A
+    for multivariate mediation simulation
+    """
+    A=np.zeros((n,n))
+    np.fill_diagonal(A,1)
+    for i,j in pairs:
+        A[i,j]=1
+        A[j,i]=1
+    return A
 
-            # check whether mat is indeed psd
-            E,_=eigh(mat)
-            psd=all(E>=0)
-    else:
-        mat=A.T.dot(A)
-
-    producer=(np.random.multivariate_normal(np.zeros(n),mat,size=n)
+def multi_var_mediation(n, b11 = -2, b21 = 2, b32 = -1.5):
+    """
+    A is a symmetric positive semidefinite matrix,
+    encoding relationships inbetween each pair of OTUs
+    """
+    A=_A(n)
+    producer=(np.random.multivariate_normal(np.zeros(n),A)
              +np.random.rand(n))
     
     mm = b21*producer + np.random.normal(size=n)
