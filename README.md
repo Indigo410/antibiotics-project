@@ -1,7 +1,14 @@
 # antibiotics-project
 
-- updated B&K steps for mediation on simulated data
+- removed incorrect multivariate simulation method, added update to
+  the multivariate simulation
+- WIP: restructuring mediation simulation into a class
+- TODO: 
+    - update verification script for the mediation simulation class
+    - fix the carried over errors in the verification process
 
+
+- updated B&K steps for mediation on simulated data
 
 - added first draft of reimplementation of linear regression (linmodEst) from R.
 - TODO: test linReg.py
