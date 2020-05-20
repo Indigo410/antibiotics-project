@@ -1,8 +1,12 @@
 name: bio
+channels:
+  - pypi
+  - conda-forge
 dependencies:
-  - python=3.7.3=h359304d_0
-  - biopython=1.76=py37h0b31af3_0
-  - jupyter=1.0.0=py37_7
-  - numpy=1.15.4=py37hacdab7b_0
-  - pandas=0.25.2=py37h0a44026_0
-  - scipy=1.2.0=py37h1410ff5_0
+  - python=3.7.3
+  - biopython=1.76
+  - jupyter=1.0.0
+  - numpy=1.15.4
+  - pandas=0.25.2
+  - scipy=1.2.0
+  - pycasso=0.1.2.2 
