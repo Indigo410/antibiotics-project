@@ -1,4 +1,5 @@
 import numpy as np
+import networkx
 
 
 class Simulation:
@@ -10,13 +11,13 @@ class Simulation:
         A=None,
         B=None):
         """
-        n: int, number of simulation samples
-        p_otu: int, number of otu populations
-        p_metabolite: int, number of metabolite populations
-        multivar: bool, flag for whether the otu populations are correlated
-        A: a (p_otu*p_otu) covariance matrix encoding the relationship between otu species; ignored
+        @param n: int, number of simulation samples
+        @param p_otu: int, number of otu populations
+        @param p_metabolite: int, number of metabolite populations
+        @param multivar: bool, flag for whether the otu populations are correlated
+        @param A: a (p_otu*p_otu) covariance matrix encoding the relationship between otu species; ignored
         if mutlivar is False; required if multivar is True
-        B: a (p_metabolite*p_metabolite) covariance matrix
+        @param B: a (p_metabolite*p_metabolite) covariance matrix
         """
         self.n=n
         self.p_otu=p_otu
@@ -38,9 +39,9 @@ class Simulation:
         b={'b11':-2,'b21':2,'b32':-1.5},
         mediation_func="simple"):
         """
-        mediations: int, number of mediations specified for the simulation
-        b: dictionary, truth values for the relationship between producer and target
-        mediation_func: str or callable, the method for generating related producer-target abundance
+        @param mediations: int, number of mediations specified for the simulation
+        @param b: dictionary, truth values for the relationship between producer and target
+        @param mediation_func: str or callable, the method for generating related producer-target abundance
         """
         self.b=b
 

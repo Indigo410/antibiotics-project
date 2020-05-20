@@ -1,6 +1,5 @@
-- `simulation`
+## `simulation`
 >input: 
->    - truth values (`beta`s)
 >    - simulation functions
 >        - otu population
 >            - dimension, correlation
@@ -9,9 +8,9 @@
 >output:
 >    - simulator object
 >        - input:
->            - trial size `n`
+>            - truth values (`beta`s)
 >        - output:
->            - simulated otu populations
+>            - simulated otu populations abundance and metabolite abundance
 
 |`variable`|dimension|
 |------|------|
@@ -21,10 +20,10 @@
 |metabolite abundance (mediation)|`mediations` * `n`|
 |metabolite abundance (not mediation)|`p_metabolite`-`mediations` * `n`|
 
-- `tester`
+## `tester`
 >input:
 >   - simulator object
->   - number of simulation trials `n`
+>   - number of simulation trials `t`
 >   - method of prediction
 >       - B&K steps
 >
@@ -35,7 +34,7 @@
 >
 output table format:
 
-For `n`=`some number of trials`:
+For `t`=`some number of trials`:
 |`beta`|truth value|`p_value`|
 |:------:|:------:|:------:|
 |`b11`|-|-|
