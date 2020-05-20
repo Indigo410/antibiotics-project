@@ -1,5 +1,7 @@
 import numpy as np
-import networkx
+
+from Bio import Phylo
+from Bio.Phylo.TreeConstruction import DistanceTreeConstructor,DistanceMatrix
 
 
 class Simulation:
@@ -91,8 +93,22 @@ class TreeSimilarity:
     """
     # TODO
     
-    def __init__(self):
-        pass
+    def __init__(self,n,names=None):
+        if names is None:
+            names=["otu{}".format(i) for i in range(n)]
+        
+        self.distMat=np.tril(np.random.rand(n,n))
+
+    def draw(self):
+        """
+        visualize the phylo tree
+        """
+        mat=list(map(lambda x: list(filter(lambda x:x>0,x)),self.distMat.tolist()))
+        constructor = DistanceTreeConstructor()
+        upgmatree = constructor.upgma(DistanceMatrix(list("abcd"),mat))
+        
+        Phylo.draw_ascii(upgmatree)
 
     def generate(self):
         pass
+        # TODO: from lower triangle distance matrix to covariance matrix

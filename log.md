@@ -1,12 +1,12 @@
-- filled in code for test_simulation.py
-- created structure.md to record planned package structure of `simulation`
+- filled in code for `test_simulation.py`
+- created `structure.md` to record planned package structure of `simulation`
 - WIP:
-    - tree similarity in simulation.py
+    - tree similarity in `simulation.py`
 - TODO:
-    - validate the code for test_simulation.py
-    - fill in usage.ipynb
+    - validate the code for `test_simulation.py`
+    - fill in `usage.ipynb`
 ---
-- moved log of progress from README.md
+- moved log of progress from `README.md`
 - Simulation class work as expected
 - WIP:
     - reformating the simulation and testing script
@@ -22,7 +22,7 @@
 - updated B&K steps for mediation on simulated data
 ---
 - added first draft of reimplementation of linear regression (linmodEst) from R.
-- TODO: test linReg.py
+- TODO: test `linReg.py`
 
 ---
 - finished 1st draft of mediation_simulation in python
