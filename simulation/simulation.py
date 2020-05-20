@@ -99,12 +99,12 @@ class TreeSimilarity:
             names=[names+str(i) for i in range(n)]
         self.names=names
 
-        self.distMat=np.tril(np.random.rand(n,n))
+        self.distMat=np.tril(np.random.rand(n,n),-1)
 
-        #! self.cov is not psd, fix this
+        
         # consider covariance as the inverse of distance
-        self.cov=1/(self.distMat+np.triu(self.distMat.T,1))
-        self.cov=self.cov.T*self.cov
+        self.cov=1-(self.distMat+self.distMat.T)
+        self.cov=np.cov(self.cov)
 
     def draw(self):
         """
