@@ -30,8 +30,8 @@ class Simulation:
             self.B=B
             
         if multivar:
-            self.otutable = np.random.multivariate_normal(np.zeros(p_otu),A,size=(p_otu,n))
-            self.metabolitetable = np.random.multivariate_normal(np.zeros(p_metabolite),B,size=(p_metabolite,n))
+            self.otutable = np.random.multivariate_normal(np.zeros(p_otu),A,size=n)
+            self.metabolitetable = np.random.multivariate_normal(np.zeros(p_metabolite),B,size=n)
         else:
             self.otutable = np.random.rand(p_otu,n)
             self.metabolitetable = np.random.rand(p_metabolite,n)
@@ -98,12 +98,12 @@ class TreeSimilarity:
         else:
             names=[names+str(i) for i in range(n)]
         self.names=names
-
-        self.distMat=np.tril(np.random.rand(n,n),-1)
-
         
+        self.distMat=np.tril(np.random.rand(n,n))
+
+        temp=np.tril(self.distMat,-1)
         # consider covariance as the inverse of distance
-        self.cov=1-(self.distMat+self.distMat.T)
+        self.cov=1-(temp+temp.T)
         self.cov=np.cov(self.cov)
 
     def draw(self):
