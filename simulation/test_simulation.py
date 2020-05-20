@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.linalg import inv,qr,solve,lstsq
-from simulation import simulation
+from simulation import Simulation
 
 def generate(vars,beta,mediation_type,mediations=1,t=2000):
     """
@@ -14,7 +14,7 @@ def generate(vars,beta,mediation_type,mediations=1,t=2000):
     differences=np.empty(t,dtype=object)
 
     for i in range(t):
-        simulator=simulation(**vars)
+        simulator=Simulation(**vars)
         _=simulator.run_simulation(**beta,
                         mediations=mediations,
                         mediation_func=mediation_type)

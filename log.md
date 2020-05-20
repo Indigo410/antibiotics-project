@@ -4,6 +4,7 @@
     - tree similarity in `simulation.py`
 - TODO:
     - validate the code for `test_simulation.py`
+    - fix the not psd problem in `TreeSimilarity`
     - fill in `usage.ipynb`
 ---
 - moved log of progress from `README.md`

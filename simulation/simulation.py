@@ -91,13 +91,20 @@ class TreeSimilarity:
     generate covariance matrix as a parameter of multinomial distribution
     from a tree of similarities between OTUs
     """
-    # TODO
     
     def __init__(self,n,names=None):
         if names is None:
             names=["otu{}".format(i) for i in range(n)]
-        
+        else:
+            names=[names+str(i) for i in range(n)]
+        self.names=names
+
         self.distMat=np.tril(np.random.rand(n,n))
+
+        #! self.cov is not psd, fix this
+        # consider covariance as the inverse of distance
+        self.cov=1/(self.distMat+np.triu(self.distMat.T,1))
+        self.cov=self.cov.T*self.cov
 
     def draw(self):
         """
@@ -105,10 +112,6 @@ class TreeSimilarity:
         """
         mat=list(map(lambda x: list(filter(lambda x:x>0,x)),self.distMat.tolist()))
         constructor = DistanceTreeConstructor()
-        upgmatree = constructor.upgma(DistanceMatrix(list("abcd"),mat))
+        upgmatree = constructor.upgma(DistanceMatrix(self.names,mat))
         
         Phylo.draw_ascii(upgmatree)
-
-    def generate(self):
-        pass
-        # TODO: from lower triangle distance matrix to covariance matrix
