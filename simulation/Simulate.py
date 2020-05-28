@@ -103,7 +103,6 @@ class Simulate:
                     'a32':self.b3}
 
 
-
     def __mse(self,a,b):
         mse=np.power(b-a,2).mean()
 
