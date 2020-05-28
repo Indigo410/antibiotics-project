@@ -30,8 +30,8 @@ class Simulation:
             self.B=B
             
         if multivar:
-            self.otutable = np.random.multivariate_normal(np.zeros(p_otu),A,size=n)
-            self.metabolitetable = np.random.multivariate_normal(np.zeros(p_metabolite),B,size=n)
+            self.otutable = np.random.multivariate_normal(np.zeros(p_otu),A,size=n).T
+            self.metabolitetable = np.random.multivariate_normal(np.zeros(p_metabolite),B,size=n).T
         else:
             self.otutable = np.random.rand(p_otu,n)
             self.metabolitetable = np.random.rand(p_metabolite,n)
@@ -46,6 +46,7 @@ class Simulation:
         @param mediation_func: str or callable, the method for generating related producer-target abundance
         """
         self.b=b
+        self.mediations=mediations
 
         if isinstance(mediation_func,str):
             if mediation_func=="simple_direct": mediation_func=self.__simple_direct
@@ -63,6 +64,8 @@ class Simulation:
 
             self.is_dependent[ix]=1
         
+        self.is_dependent=self.is_dependent.astype(bool)
+
         return self.otutable,self.metabolitetable
         
     def __simple(self,j,b11,b21,b32):

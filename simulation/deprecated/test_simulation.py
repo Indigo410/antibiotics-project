@@ -1,27 +1,26 @@
 import numpy as np
+from scipy.stats import norm
 from numpy.linalg import inv,qr,solve,lstsq
 from simulation import Simulation
 
-def generate(vars,beta,mediation_type,mediations=1,t=2000):
+def generate(vars0,vars1,t=2000):
     """
-    generate t independent simulation trials, n default to 2000
+    generate t independent simulation trials
     @param t: number of simulations
-    @param beta: mediation coefficients to run simulation
-    @param mediation_type: type of mediation function to run simulation
-    @param mediations: number of mediations,default to 1
-    @param vars: initializing variables to pass into Simulation
+    @param vars0: initializing variables to pass into Simulation
+    @param vars1: varaibles to run the simulation
     """
-    differences=np.empty(t,dtype=object)
+    f={c:[] for c in ["beta11","beta21","beta31","beta32"]}
 
     for i in range(t):
-        simulator=Simulation(**vars)
-        _=simulator.run_simulation(**beta,
-                        mediations=mediations,
-                        mediation_func=mediation_type)
+        simulator=Simulation(**vars0)
+        _=simulator.run_simulation(**vars1)
         truth=truth_value(simulator)
-        differences[i]=b_k_steps(simulator,truth)
-
-    return differences
+        
+        fitted=b_k_steps(simulator,truth)
+        for c in fitted.keys():
+            f[c].append(fitted[c])
+    return f
 
 def run_test(differences):
     """
@@ -30,6 +29,15 @@ def run_test(differences):
     """
     pass
     #todo
+
+def joint_significance(estimator,std):
+    """
+    joint significance test as defined in the paper btw351
+    """
+    dist=norm(loc=0,scale=1)
+    phi=np.linalg.norm(estimator)/std
+
+    return 2*(1-norm.cdf(phi))
 
 def truth_value(sim):
     """
@@ -43,7 +51,6 @@ def truth_value(sim):
     true_coeff={
         'beta11':np.hstack([np.zeros(sim.p_otu-2),beta["b32"]*beta["b21"]]),
         'beta21':temp,
-        'beta31':np.hstack([np.zeros(sim.p_otu-1)]),
         'beta32':np.hstack([np.zeros(sim.p_metabolite-sim.mediations),
                             beta["b32"]])
     }
@@ -60,7 +67,7 @@ def b_k_steps(sim,truth):
     otutable=sim.otutable
     metabolitetable=sim.metabolitetable
 
-    producer,target=otutable[:-sim.mediations,:],otutable[-sim.mediations,:]
+    producer,target=otutable[~sim.is_dependent],otutable[sim.is_dependent]
 
     # step 1
     X=np.vstack([np.ones((1,producer.shape[1])),producer])
@@ -84,14 +91,13 @@ def b_k_steps(sim,truth):
     fitted = {
         'beta11':np.asarray(b11).reshape(-1),
         'beta21':np.asarray(b21),
-        'beta31':np.asarray(b31).reshape(-1),
         'beta32':np.asarray(b32).reshape(-1)
     }
     
     # ! change this to adapt to the statistical tests decided later
-    # absolute difference
-    d={}
-    for k in fitted.keys():
-        d[k]=np.abs(truth[k]-fitted[k])
+    # # absolute difference
+    # d={}
+    # for k in fitted.keys():
+    #     d[k]=np.abs(truth[k]-fitted[k])
 
-    return d
+    return fitted
