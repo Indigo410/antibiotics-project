@@ -1,4 +1,4 @@
-name: bio
+name: bio-R
 channels:
   - defaults
   - conda-forge
@@ -9,6 +9,8 @@ dependencies:
   - numpy=1.15.4
   - pandas=0.25.2
   - scipy=1.2.0
+  - r-essentials=3.6.0
+  - r-ncvreg=3.11_1
   - pip=20.0.2
   - pip:
     - pycasso==0.1.2.2
