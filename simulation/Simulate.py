@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import norm
+from scipy.stats import norm,pearsonr
 
 class Simulate:
     def __init__(self,n,b1,b2,b3,vars=None):
@@ -86,6 +86,9 @@ class Simulate:
                 'a32':a32}
 
     def score(self):
+        """
+        calculates MSE of the prediction
+        """
         self.A_true={'a11':self.b2.dot(self.b3)+self.b1,
                     'a21':self.b2,
                     'a31':self.b1,
@@ -116,3 +119,26 @@ class Simulate:
         phi=np.abs(a)/rmse
 
         return 2*(1-dist.cdf(phi))
+
+    def __pairwise_pr(self,X):
+        corr=dict()
+        ps=dict()
+        shape=X.shape[0]
+
+        for i in range(shape):
+            for j in range(shape):
+                if i!=j:
+                    c,p=pearsonr(X[i],X[j])
+                    corr[(i,j)]=c
+                    ps[(i,j)]=p
+        return corr,ps
+
+    def pearsonCorr(self):
+        """
+        computes pairwise pearson correlation
+        """
+        
+        return {
+            "exposure":self.__pairwise_pr(self.exposure),
+            "mediator":self.__pairwise_pr(self.mediator)
+        }
