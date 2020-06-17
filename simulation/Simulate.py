@@ -1,24 +1,22 @@
 import numpy as np
 from scipy.stats import norm,pearsonr
 
+
 class Simulate:
-    def __init__(self,n,b1,b2,b3,vars=None):
+    def __init__(self,n:int,b:dict,vars=None) -> None:
         """
         @param n: number of samples
         @param b1: all 0 for direct mediation, some otu directly influenced target otu otherwise
         """
         # input variables
         self.n=n
-        self.b1=b1
-        self.b2=b2
-        self.b3=b3
+        self.b=b
 
         # inferred variables
-        self.p_otu=b2.shape[0]
-        self.p_met=b3.shape[0]
+        self.p_otu=b["b2"].shape[0]
+        self.p_met=b["b3"].shape[0]
 
-
-    def simulate_mediation(self,x_func,m_func,x_args=None,m_args=None):
+    def simulate_mediation(self,x_func,m_func,x_args=None,m_args=None) -> None:
         """
         @param x_func: function to generate X (exposure)
         @param m_func: function to generate M (mediator)
@@ -39,106 +37,72 @@ class Simulate:
             self.mediator=m_func(*m_shape)
         
         # simulate mediation effect
-        
-        self.mediator+=np.dot(self.b2.T,self.exposure)+np.random.normal(size=self.mediator.shape)
-        self.outcome=np.dot(self.b3.T,self.mediator)+np.dot(self.b1.T,self.exposure)
+        self.mediator+=np.dot(self.b["b2"].T,self.exposure)+np.random.normal(size=self.mediator.shape)
+        self.outcome=np.dot(self.b["b3"].T,self.mediator)+np.dot(self.b["b1"].T,self.exposure)
 
         #add noise again
         self.outcome=self.outcome+np.random.normal(size=self.outcome.shape)
 
+        # ? normalize all abundance
+        # normalized=np.vstack([self.exposure,self.outcome])
+        # normalized/=np.sum(normalized,axis=0)
+        
+        # self.exposure_n=normalized[:self.exposure.shape[0]]
+        # self.outcome_n=normalized[self.exposure.shape[0]:]
 
-    def get_coeff(self):
-        return {"b1":self.b1,"b2":self.b2,"b3":self.b3}
+    def get_coeff(self) -> dict:
+        return self.b
+
+    def set_coeff(self,b:dict) -> None:
+        self.b=b
+
+    def get_truth(self) -> dict:
+        return dict(a11=self.b["b2"].dot(self.b["b3"])+self.b["b1"].reshape(-1),
+                    a31=self.b["b1"].reshape(-1),
+                    a21=self.b["b3"].reshape(-1),
+                    a32=self.b["b3"].reshape(-1))
 
 
-    def set_coeff(self,b1,b2,b3):
-        self.b1=b1
-        self.b2=b2
-        self.b3=b3
-
-    def estimate(self,solver):
+    def estimate(self,solver) -> None:
         """
         estimate the parameters with B&K steps
         @param solver: solver to use for solving the linear systems
         """
-        X=self.exposure.copy()
-        Y=self.outcome.copy()
-        M=self.mediator.copy()
+        self.A=Simulate.B_K_steps(solver,self.exposure,self.mediator,self.outcome)
 
-        # step 1.
+    @staticmethod
+    def __step1(solver,X,Y) ->np.ndarray:
         X_1=np.vstack([X,np.ones(X.shape[1])])
         A1=solver(X_1.T,Y.T)
-        a11=A1[:-1]
+        
+        return A1[:-1]
 
-        # step 2.
+    @staticmethod
+    def __step2(solver,X,M) ->np.ndarray:
+        X_1=np.vstack([X,np.ones(X.shape[1])])
         A2=solver(X_1.T,M.T)
-        a21=A2[:-1]
 
-        # step 3.
+        return A2[:-1]
+
+    @staticmethod
+    def __step3(X,M,Y) ->tuple:
         X_M_1=np.vstack([X,M,np.ones(X.shape[1])])
         A3=solver(X_M_1.T,Y.T)
-        a31=A3[:X.shape[0]]
-        a32=A3[X.shape[0]:-1]
 
-        self.A={'a11':a11,
-                'a21':a21,
-                'a31':a31,
-                'a32':a32}
-
-    def score(self):
+        return A3[:X.shape[0]],A3[X.shape[0]:-1]
+    
+    @staticmethod
+    def B_K_steps(solver,X:np.ndarray,M:np.ndarray,Y:np.ndarray) ->dict:
         """
-        calculates MSE of the prediction
+        estimate the coefficients by B&K steps
         """
-        self.A_true={'a11':self.b2.dot(self.b3)+self.b1,
-                    'a21':self.b2,
-                    'a31':self.b1,
-                    'a32':self.b3}
-        self.MSE=dict()
+        a11=Simulate.__step1(solver,X,Y)
 
-        for a in self.A_true.keys():
-            mse=self.__mse(self.A[a],self.A_true[a])
-            self.MSE[a]=mse
+        a21=Simulate.__step2(solver,X,Y)
 
-    def _truth(self):
-        return {'a11':self.b2.dot(self.b3)+self.b1,
-                    'a21':self.b2,
-                    'a31':self.b1,
-                    'a32':self.b3}
+        a31,a32=Simulate.__step3(solver,X,M,Y)
 
+        # format results
+        A=dict(a11=a11,a21=a21,a31=a31,a32=a32)
 
-    def __mse(self,a,b):
-        mse=np.power(b-a,2).mean()
-
-        return mse
-
-    def __joint_sig_test(self,a,b):
-        #! what is the estimate of standard error for b?
-        #! using rmse instead
-        dist=norm(loc=0,scale=1)
-        rmse=np.sqrt(np.power(b-a,2).mean())
-        phi=np.abs(a)/rmse
-
-        return 2*(1-dist.cdf(phi))
-
-    def __pairwise_pr(self,X):
-        corr=dict()
-        ps=dict()
-        shape=X.shape[0]
-
-        for i in range(shape):
-            for j in range(shape):
-                if i!=j:
-                    c,p=pearsonr(X[i],X[j])
-                    corr[(i,j)]=c
-                    ps[(i,j)]=p
-        return corr,ps
-
-    def pearsonCorr(self):
-        """
-        computes pairwise pearson correlation
-        """
-        
-        return {
-            "exposure":self.__pairwise_pr(self.exposure),
-            "mediator":self.__pairwise_pr(self.mediator)
-        }
+        return A
