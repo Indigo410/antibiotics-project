@@ -85,7 +85,7 @@ class Simulate:
         return A2[:-1]
 
     @staticmethod
-    def __step3(X,M,Y) ->tuple:
+    def __step3(solver,X,M,Y) ->tuple:
         X_M_1=np.vstack([X,M,np.ones(X.shape[1])])
         A3=solver(X_M_1.T,Y.T)
 

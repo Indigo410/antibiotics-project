@@ -2,22 +2,7 @@ import numpy as np
 from scipy.stats import norm,pearsonr
 from Simulate import Simulate
 
-
-def score(s,metric=_MSE,args={}) -> dict:
-    """
-    
-    evaluates the simulator with given metric,
-    metric is default to MSE
-    """
-    if args:
-        result=metric(s,**args)
-    else:
-        result=metric(s)
-    
-    return result
-    
-
-def _MSE(s) -> float:
+def _MSE(s) -> dict:
     """
     computes the MSE value between truth vector and estimated vector
     """
@@ -29,7 +14,21 @@ def _MSE(s) -> float:
 
     return mse
 
-
+def score(simulator,metric=_MSE,args={}) -> dict:
+    """
+    general function for evaluating the estimation.
+    evaluates the simulator with given metric,
+    @param simulator: the Simulate object to be evaluated
+    @param metric: metric to evaluate, default to MSE
+    @param args: additional arguments to pass into metric function
+    """
+    if args:
+        result=metric(simulator,**args)
+    else:
+        result=metric(simulator)
+    
+    return result
+    
 
 ################################################
 #               metric fucntions               #
@@ -38,21 +37,20 @@ def _MSE(s) -> float:
 ################################################
 
 
-def non_param_bootstrap(s,solver,n=2000,level=0.95) -> dict:
+def non_param_bootstrap(s,solver,n=1000) -> dict:
     """
     computes p-value of the estimation by non-parametric bootstrap
     @param n: number of trials for bootstrapping,default to 2000
-    @param level: confidence level, default to 0.95
     """
-    null_dist=dict=(a11=np.zeros((s.p_otu,n)),
-                    a21=np.zeros((s.p_met,n)),
+    null_dist=dict(a11=np.zeros((s.p_otu,n)),
+                    a21=np.zeros((s.p_otu,n)),
                     a31=np.zeros((s.p_otu,n)),
                     a32=np.zeros((s.p_met,n)))
     std_dist=null_dist.copy()
 
     # begin bootstrapping
     for i in range(n):
-        # null 
+        #----null----#
         # renomalization with randomized outcome abundance
         outcome=np.random.rand(s.n)
         normalized=np.vstack([s.exposure,outcome])
@@ -65,8 +63,7 @@ def non_param_bootstrap(s,solver,n=2000,level=0.95) -> dict:
         # solve for coefficients
         A_null=s.B_K_steps(solver,X=exposure_n,Y=outcome_n,M=s.mediator)
 
-
-        # standard bootstrap
+        #----standard bootstrap----#
         # shuffle horizontally accross each trial
         rng=np.random.default_rng()
         exposure=s.exposure.copy()
@@ -76,14 +73,17 @@ def non_param_bootstrap(s,solver,n=2000,level=0.95) -> dict:
 
         # store current iteration result
         for k in null_dist.keys():
-            null_dist[k][i]=A_null[k]
-            std_dist[k][i]=A_std[k]
+            null_dist[k][:,i]=A_null[k]
+            std_dist[k][:,i]=A_std[k]
 
-    # TODO: 2 sample t test
+    #2 sample t test for the means of two independent samples
+    result=dict()
+    for k in null_dist.keys():
+        # discard the t-statistics and keep p val
+        result[k]=ttest_ind(null_dist[k],std_dist[k],axis=1)[1]    
+        
+    return result
 
-
-
-    raise NotImplementedError
 
 
 ################################################
@@ -93,7 +93,7 @@ def non_param_bootstrap(s,solver,n=2000,level=0.95) -> dict:
 #         p values for OTU and mediators       #
 ################################################
 
-def pearson_corr(simulator,threshold=0.01):
+def pearson_corr(simulator,threshold=0.01)->dict:
     """
     pairwise pearson correlation between all OTU and mediators
     """
@@ -116,6 +116,8 @@ def pearson_corr(simulator,threshold=0.01):
                         ps[(i,j)]=p
 
         result[k]=dict(corr=corr,p=ps)
+    
+    return result
 
         
 def joint_significance(simulator):
