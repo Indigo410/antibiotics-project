@@ -1,9 +1,9 @@
 - updated module structure, demo usage contained in `usage.py`
 - implemented `non_param_bootstrap` in test.py
-    - TODO: `RuntimeWarning: invalid value encountered in <comparison>` from 2 sample t-test
 - WIP:
     - implement modified correlation coefficient
 - TODO:
+    - Q: should metabolite also be randomly sampled in `non_param_bootstrap`?
     - fix and update `joint_significance`
     - suppress unwanted print statement from imported module
 ---

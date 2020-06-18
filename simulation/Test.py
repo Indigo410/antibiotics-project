@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import norm,pearsonr,ttest_ind
+from scipy.stats import norm,pearsonr
 from Simulate import Simulate
 
 def _MSE(s) -> dict:
@@ -46,41 +46,42 @@ def non_param_bootstrap(s,solver,n=1000) -> dict:
                     a21=np.zeros((s.p_otu,n)),
                     a31=np.zeros((s.p_otu,n)),
                     a32=np.zeros((s.p_met,n)))
-    std_dist=null_dist.copy()
+    std_dist=dict(a11=np.zeros((s.p_otu,n)),
+                    a21=np.zeros((s.p_otu,n)),
+                    a31=np.zeros((s.p_otu,n)),
+                    a32=np.zeros((s.p_met,n)))
 
     # begin bootstrapping
     for i in range(n):
         #----null----#
         # renomalization with randomized outcome abundance
         outcome=np.random.rand(s.n)
-        normalized=np.vstack([s.exposure,outcome])
+        normalized=np.vstack([s.exposure.copy(),outcome])
         normalized/=np.sum(normalized,axis=0)
-        normalized*=np.vstack([s.exposure,s.outcome]).sum()
+        normalized*=np.vstack([s.exposure.copy(),s.outcome.copy()]).sum()
 
-        exposure_n=normalized[:s.exposure.shape[0]]
-        outcome_n=normalized[s.exposure.shape[0]:]
+        exposure_n=normalized[:s.p_otu]
+        outcome_n=normalized[s.p_otu:]
 
         # solve for coefficients
         A_null=s.B_K_steps(solver,X=exposure_n,Y=outcome_n,M=s.mediator)
 
         #----standard bootstrap----#
-        # shuffle horizontally accross each trial
-        rng=np.random.default_rng()
-        exposure=s.exposure.copy()
-        rng.shuffle(exposure,axis=1)
+        rng = np.random.default_rng()
+        ix=rng.choice(s.n,s.n)
 
-        A_std=s.B_K_steps(solver,X=exposure,Y=s.outcome,M=s.mediator)
+        A_std=s.B_K_steps(solver,X=s.exposure[:,ix],Y=s.outcome[:,ix],M=s.mediator)
 
         # store current iteration result
-        for k in null_dist.keys():
+        for k in A_null.keys():
             null_dist[k][:,i]=A_null[k]
             std_dist[k][:,i]=A_std[k]
 
-    #2 sample t test for the means of two independent samples
+
     result=dict()
     for k in null_dist.keys():
-        # discard the t-statistics and keep p val
-        result[k]=ttest_ind(null_dist[k],std_dist[k],axis=1)[1]    
+        cnt=((null_dist[k]-std_dist[k])!=0).sum(axis=1)
+        result[k]=cnt/n       
         
     return result
 
