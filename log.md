@@ -1,3 +1,12 @@
+- updated module structure, demo usage contained in `usage.py`
+- implemented `non_param_bootstrap` in test.py
+    - TODO: `RuntimeWarning: invalid value encountered in <comparison>` from 2 sample t-test
+- WIP:
+    - implement modified correlation coefficient
+- TODO:
+    - fix and update `joint_significance`
+    - suppress unwanted print statement from imported module
+---
 - filled in code for `test_simulation.py`
 - created `structure.md` to record planned package structure of `simulation`
 - WIP:

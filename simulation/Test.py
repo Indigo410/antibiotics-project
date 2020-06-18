@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import norm,pearsonr
+from scipy.stats import norm,pearsonr,ttest_ind
 from Simulate import Simulate
 
 def _MSE(s) -> dict:

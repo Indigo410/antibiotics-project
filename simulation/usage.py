@@ -1,4 +1,4 @@
-from Simulate import Simulate,coefficient
+from Simulate import Simulate
 from Random import TreeSimilarity
 from Test import *
 import pycasso
@@ -39,13 +39,13 @@ def pipeline(random_state=0):
     s.simulate_mediation(t_exposure.rand,t_mediator.rand)
     s.estimate(lasso)
     
-    evaluation=score(s,non_param_bootstrap)
+    evaluation=score(s,non_param_bootstrap,dict(solver=lasso))
 
     return evaluation
 
 
 if __name__=="__main__":
     evaluation=pipeline()
-    
+
     for k in evaluation.keys():
         print(k,evaluation[k])
