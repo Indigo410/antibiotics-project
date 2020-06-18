@@ -2,24 +2,13 @@ import numpy as np
 from scipy.stats import norm,pearsonr
 from Simulate import Simulate
 
-def _MSE(s) -> dict:
-    """
-    computes the MSE value between truth vector and estimated vector
-    """
-    truth=s._truth()
-    mse=dict()
 
-    for k in truth.keys():
-        mse[k]=np.power(truth[k],s.A[k],2).mean()
-
-    return mse
-
-def score(simulator,metric=_MSE,args={}) -> dict:
+def score(simulator,metric,args={}) -> dict:
     """
-    general function for evaluating the estimation.
+    wrapper function for evaluating the estimation.
     evaluates the simulator with given metric,
     @param simulator: the Simulate object to be evaluated
-    @param metric: metric to evaluate, default to MSE
+    @param metric: metric to evaluate
     @param args: additional arguments to pass into metric function
     """
     if args:
@@ -29,6 +18,40 @@ def score(simulator,metric=_MSE,args={}) -> dict:
     
     return result
     
+
+def corr(simulator,metric,threshold=0.01,args={})->dict:
+    """
+    wrapper function for computing pairwise correlation
+    with given metric,
+    @param simulator: the Simulate object that contains observation matrices
+    @param metric: metric to compute correlation coefficient
+    @param args: additional arguments to pass into metric function
+    """
+    result=dict(exposure=dict(),mediator=dict())
+
+    for k in ("exposure","mediator"):
+        corr=dict()
+        ps=dict()
+        X=getattr(simulator,k)
+
+        for i in range(shape):
+            for j in range(shape):
+                if i!=j:
+                    if args:
+                        c,p=metric(X[i],X[j],**args)
+                    else:
+                        c,p=metric(X[i],X[j])
+                    
+                    # keep only the ones with statistic significance
+                    if p>=threshold:
+                        corr[(i,j)]=c
+                        ps[(i,j)]=p
+
+        result[k]=dict(corr=corr,p=ps)
+    
+    return result
+
+
 
 ################################################
 #               metric fucntions               #
@@ -88,38 +111,37 @@ def non_param_bootstrap(s,solver,n=1000) -> dict:
 
 
 ################################################
-#          other correlation metrics           #
+#         pairwise correlation metrics         #
 # input : simulator, (additonal args,)         #
 # output: correlation coefficients and         #
-#         p values for OTU and mediators       #
+#         p values                             #
 ################################################
 
-def pearson_corr(simulator,threshold=0.01)->dict:
+def pearson_corr(x,y)->tuple:
     """
-    pairwise pearson correlation between all OTU and mediators
+    pairwise pearson correlation between all observations in X
     """
-    result=dict(exposure=dict(),mediator=dict())
+    c,p=pearsonr(x,y)
 
-    for k in ("exposure","mediator"):
-        corr=dict()
-        ps=dict()
-        X=getattr(simulator,k)
-        shape=X.shape[0]
+    return (corr=corr,p=ps)
 
-        for i in range(shape):
-            for j in range(shape):
-                if i!=j:
-                    c,p=pearsonr(X[i],X[j])
-                    
-                    # keep only the ones with statistic significance
-                    if p>=threshold:
-                        corr[(i,j)]=c
-                        ps[(i,j)]=p
-
-        result[k]=dict(corr=corr,p=ps)
+def logratio_var(x,y)->tuple:
+    """
+    logratio variance coefficient, Lovell D ver.
+    """
+    lx=np.log(x).reshape(-1)
+    ly=np.log(y).reshape(-1)
+    c=np.cov(np.hstack([lx,ly]))
     
-    return result
+    rou=2*c/(np.var(lx)+np.var(ly))
 
+    return rou,None
+
+def logratio_var1(x,y)->tuple:
+    """
+    logratio variance coefficient, common ver.
+    """
+    return 1-np.var(x-y)/(np.var(x)+np.var(y))
         
-def joint_significance(simulator):
+def joint_significance(simulator)->tuple:
     raise NotImplementedError
