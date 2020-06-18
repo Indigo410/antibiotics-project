@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import norm,pearsonr
-from Simulate import Simulate,coefficient
+from Simulate import Simulate
 
 
 def score(s,metric=_MSE,args={}) -> dict:
@@ -68,9 +68,11 @@ def non_param_bootstrap(s,solver,n=2000,level=0.95) -> dict:
 
         # standard bootstrap
         # shuffle horizontally accross each trial
-        #TODO
-        A_std=None
+        rng=np.random.default_rng()
+        exposure=s.exposure.copy()
+        rng.shuffle(exposure,axis=1)
 
+        A_std=s.B_K_steps(solver,X=exposure,Y=s.outcome,M=s.mediator)
 
         # store current iteration result
         for k in null_dist.keys():
